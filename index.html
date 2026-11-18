@@ -993,6 +993,93 @@
     .crop-toast.show {
       display: block;
     }
+
+    /* ==========================================
+       GitHub Sync Button & Modal Styles
+       ========================================== */
+    .btn-github {
+      background: linear-gradient(180deg, #2ea043 0%, #238636 100%);
+      border-color: #3fb950;
+      color: #ffffff;
+      position: relative;
+    }
+
+    .btn-github:hover {
+      background: linear-gradient(180deg, #3fb950 0%, #2ea043 100%);
+      border-color: #56d364;
+    }
+
+    .btn-github.unsaved::after {
+      content: '';
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 10px;
+      height: 10px;
+      background: #ffb224;
+      border: 2px solid #0f1420;
+      border-radius: 50%;
+    }
+
+    .gh-modal {
+      background: #0e1320;
+      border: 1px solid #2b3856;
+      border-radius: 14px;
+      width: min(540px, 95vw);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+    }
+
+    .gh-modal-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .gh-guide-box {
+      background: rgba(53, 99, 217, 0.12);
+      border: 1px solid rgba(78, 123, 255, 0.35);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      color: #c8d7f5;
+    }
+
+    .gh-guide-box ol {
+      margin: 6px 0 10px 18px;
+    }
+
+    .gh-status-msg {
+      font-size: 0.84rem;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .gh-status-msg.info {
+      display: block;
+      background: rgba(74, 125, 255, 0.15);
+      border: 1px solid rgba(74, 125, 255, 0.45);
+      color: #9ec1ff;
+    }
+
+    .gh-status-msg.success {
+      display: block;
+      background: rgba(46, 160, 67, 0.2);
+      border: 1px solid #3fb950;
+      color: #7ee787;
+    }
+
+    .gh-status-msg.error {
+      display: block;
+      background: rgba(229, 72, 77, 0.18);
+      border: 1px solid #e5484d;
+      color: #ff9b9e;
+    }
   </style>
 </head>
 <body>
@@ -1058,6 +1145,15 @@
       <button class="btn btn-gold" id="btnExportPng" title="บันทึกตารางการ์ดทั้งหมดเป็นไฟล์รูปภาพ PNG">
         📷 บันทึกเป็นรูป (PNG)
       </button>
+
+      <div style="display: inline-flex; gap: 4px; align-items: center;">
+        <button class="btn btn-github" id="btnSaveGithub" title="บันทึกข้อมูลทั้งหมด (รูป ชื่อ ตัวเลข) ขึ้น GitHub ออนไลน์">
+          ☁️ บันทึกขึ้น GitHub
+        </button>
+        <button class="btn" id="btnGithubSettings" title="ตั้งค่ารหัสเชื่อมต่อ GitHub (Token) หรือดึงข้อมูลจาก GitHub" style="padding: 8px 10px;">
+          🔑
+        </button>
+      </div>
 
       <button class="btn" id="btnExportJson" title="สำรองข้อมูลทั้งหมดเก็บเป็นไฟล์">
         💾 สำรองข้อมูล
@@ -1217,6 +1313,71 @@
     </div>
   </div>
 
+  <!-- ==========================================
+       GitHub Cloud Sync & Settings Modal
+       ========================================== -->
+  <div id="ghModalBackdrop" class="crop-modal-backdrop">
+    <div class="gh-modal">
+      <div class="crop-modal-header">
+        <div class="crop-modal-title">
+          <span>☁️ ตั้งค่าบันทึกข้อมูลลง GitHub</span>
+        </div>
+        <button class="btn" id="btnCloseGhModal">✕ ปิด</button>
+      </div>
+
+      <div class="gh-modal-body">
+        <div class="gh-guide-box">
+          <strong>วิธีขอรหัสเชื่อมต่อ GitHub (ตั้งค่าครั้งเดียวในเบราว์เซอร์นี้):</strong>
+          <ol>
+            <li>กดปุ่มสีฟ้าด้านล่างเพื่อเปิดหน้าสร้าง Token บน GitHub</li>
+            <li>เลื่อนลงล่างสุดแล้วกดปุ่มสีเขียว <strong>Generate token</strong></li>
+            <li>คัดลอกรหัสที่ได้ (ขึ้นต้นด้วย <code>ghp_...</code>) มาวางในช่อง Token ด้านล่าง</li>
+          </ol>
+          <a
+            href="https://github.com/settings/tokens/new?description=Pet+Card+Tracker&scopes=repo"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary"
+            style="text-decoration: none; width: 100%; justify-content: center;"
+          >
+            🔗 คลิกเพื่อสร้าง GitHub Token อัตโนมัติ (ติ๊กสิทธิ์ repo ให้แล้ว)
+          </a>
+        </div>
+
+        <div class="crop-form-group">
+          <label for="ghTokenInput">GitHub Personal Access Token (เก็บไว้ในเบราว์เซอร์ของคุณเท่านั้น):</label>
+          <input type="password" id="ghTokenInput" class="input-control" placeholder="วางรหัส ghp_xxxxxxxxxxxx ที่นี่..." />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 0.7fr; gap: 8px;">
+          <div class="crop-form-group">
+            <label for="ghOwnerInput">ชื่อบัญชี (Owner)</label>
+            <input type="text" id="ghOwnerInput" class="input-control" value="kachainsornkla-cmyk" />
+          </div>
+          <div class="crop-form-group">
+            <label for="ghRepoInput">ชื่อโปรเจกต์ (Repo)</label>
+            <input type="text" id="ghRepoInput" class="input-control" value="pet" />
+          </div>
+          <div class="crop-form-group">
+            <label for="ghBranchInput">Branch</label>
+            <input type="text" id="ghBranchInput" class="input-control" value="main" />
+          </div>
+        </div>
+
+        <div id="ghStatusMsg" class="gh-status-msg"></div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px;">
+          <button class="btn btn-github" id="btnModalSaveToGithub" style="width: 100%; justify-content: center; padding: 10px;">
+            ☁️ บันทึกการตั้งค่า &amp; อัปโหลดข้อมูลขึ้น GitHub ทันที
+          </button>
+          <button class="btn" id="btnModalPullFromGithub" style="width: 100%; justify-content: center; padding: 9px;">
+            📥 ดึงข้อมูลล่าสุดจาก GitHub มาแสดง
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ==========================================
     // IndexedDB Storage Helper (Supports many high-res images)
@@ -1331,7 +1492,15 @@
       });
     }
 
-    async function persistState() {
+    async function persistState(isRemoteSync = false) {
+      if (!isRemoteSync) {
+        state.updatedAt = Date.now();
+        const ghBtn = document.getElementById('btnSaveGithub');
+        if (ghBtn) ghBtn.classList.add('unsaved');
+      } else {
+        const ghBtn = document.getElementById('btnSaveGithub');
+        if (ghBtn) ghBtn.classList.remove('unsaved');
+      }
       await saveToDB('petTrackerState_v2', state);
       updateStatsBadge();
     }
@@ -2605,6 +2774,240 @@
           renderCropBox();
         }
       });
+
+      // ==========================================
+      // GitHub Cloud Save & Auto-Sync Logic
+      // ==========================================
+      const GH_CONFIG_KEY = 'petTracker_ghConfig_v1';
+      const ghModalBackdrop = document.getElementById('ghModalBackdrop');
+      const ghTokenInput = document.getElementById('ghTokenInput');
+      const ghOwnerInput = document.getElementById('ghOwnerInput');
+      const ghRepoInput = document.getElementById('ghRepoInput');
+      const ghBranchInput = document.getElementById('ghBranchInput');
+      const ghStatusMsg = document.getElementById('ghStatusMsg');
+      const btnSaveGithub = document.getElementById('btnSaveGithub');
+      const btnGithubSettings = document.getElementById('btnGithubSettings');
+      const btnModalSaveToGithub = document.getElementById('btnModalSaveToGithub');
+      const btnModalPullFromGithub = document.getElementById('btnModalPullFromGithub');
+
+      function getGhConfig() {
+        try {
+          const raw = localStorage.getItem(GH_CONFIG_KEY);
+          const parsed = raw ? JSON.parse(raw) : {};
+          return {
+            token: (parsed.token || '').trim(),
+            owner: (parsed.owner || 'kachainsornkla-cmyk').trim(),
+            repo: (parsed.repo || 'pet').trim(),
+            branch: (parsed.branch || 'main').trim()
+          };
+        } catch (e) {
+          return { token: '', owner: 'kachainsornkla-cmyk', repo: 'pet', branch: 'main' };
+        }
+      }
+
+      function saveGhConfigFromInputs() {
+        const cfg = {
+          token: ghTokenInput.value.trim(),
+          owner: ghOwnerInput.value.trim() || 'kachainsornkla-cmyk',
+          repo: ghRepoInput.value.trim() || 'pet',
+          branch: ghBranchInput.value.trim() || 'main'
+        };
+        localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(cfg));
+        return cfg;
+      }
+
+      function setGhStatus(type, text) {
+        ghStatusMsg.className = 'gh-status-msg ' + (type || '');
+        ghStatusMsg.textContent = text || '';
+        if (!text) ghStatusMsg.style.display = 'none';
+        else ghStatusMsg.style.display = 'block';
+      }
+
+      function openGhModal() {
+        const cfg = getGhConfig();
+        ghTokenInput.value = cfg.token;
+        ghOwnerInput.value = cfg.owner;
+        ghRepoInput.value = cfg.repo;
+        ghBranchInput.value = cfg.branch;
+        setGhStatus('', '');
+        ghModalBackdrop.classList.add('open');
+      }
+
+      function closeGhModal() {
+        ghModalBackdrop.classList.remove('open');
+      }
+
+      function utf8ToBase64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let binary = '';
+        const chunkSize = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+        }
+        return btoa(binary);
+      }
+
+      async function pushStateToGitHub(cfg) {
+        if (!cfg.token) {
+          openGhModal();
+          setGhStatus('info', '🔑 กรุณาใส่รหัส GitHub Personal Access Token ครั้งแรกก่อนบันทึกครับ');
+          return;
+        }
+
+        const origBtnText = btnSaveGithub.innerHTML;
+        btnSaveGithub.disabled = true;
+        btnModalSaveToGithub.disabled = true;
+        btnSaveGithub.innerHTML = '⏳ กำลังบันทึกขึ้น GitHub...';
+        setGhStatus('info', '⏳ กำลังอัปโหลดข้อมูลการ์ดทั้งหมดขึ้น GitHub...');
+
+        try {
+          const headers = {
+            'Authorization': `Bearer ${cfg.token}`,
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28'
+          };
+
+          // 1. Check root directory contents to get existing sha of data.json (works even for files > 1MB)
+          let existingSha = null;
+          const listUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/?ref=${encodeURIComponent(cfg.branch)}&t=${Date.now()}`;
+          const listRes = await fetch(listUrl, { headers });
+          if (listRes.ok) {
+            const items = await listRes.json();
+            if (Array.isArray(items)) {
+              const found = items.find(item => item.name === 'data.json');
+              if (found && found.sha) {
+                existingSha = found.sha;
+              }
+            }
+          } else if (listRes.status === 401 || listRes.status === 403) {
+            throw new Error('รหัส Token ไม่ถูกต้อง หรือยังไม่ได้ติ๊กสิทธิ์ "repo" บน GitHub ครับ');
+          } else if (listRes.status === 404) {
+            throw new Error(`ไม่พบโปรเจกต์ ${cfg.owner}/${cfg.repo} (Branch: ${cfg.branch}) หรือ Token ไม่มีสิทธิ์เข้าถึงครับ`);
+          }
+
+          // 2. Upload data.json via PUT /repos/{owner}/{repo}/contents/data.json
+          state.updatedAt = Date.now();
+          const jsonStr = JSON.stringify(state);
+          const contentB64 = utf8ToBase64(jsonStr);
+
+          const putUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json`;
+          const bodyObj = {
+            message: `Update pet cards data (${state.cards.length} cards)`,
+            content: contentB64,
+            branch: cfg.branch
+          };
+          if (existingSha) {
+            bodyObj.sha = existingSha;
+          }
+
+          const putRes = await fetch(putUrl, {
+            method: 'PUT',
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bodyObj)
+          });
+
+          if (!putRes.ok) {
+            const errJson = await putRes.json().catch(() => ({}));
+            throw new Error(errJson.message || `GitHub API Error (${putRes.status})`);
+          }
+
+          await persistState(true);
+          setGhStatus('success', '✅ บันทึกข้อมูลทั้งหมดขึ้น GitHub สำเร็จแล้ว! ทุกเครื่องที่เปิดเว็บจะเห็นข้อมูลชุดล่าสุดนี้ทันที');
+          btnSaveGithub.innerHTML = '✅ บันทึกขึ้น GitHub แล้ว!';
+          setTimeout(() => {
+            btnSaveGithub.innerHTML = '☁️ บันทึกขึ้น GitHub';
+          }, 3200);
+        } catch (err) {
+          console.error('GitHub Save Error:', err);
+          btnSaveGithub.innerHTML = origBtnText;
+          if (!ghModalBackdrop.classList.contains('open')) {
+            openGhModal();
+          }
+          setGhStatus('error', '❌ บันทึกไม่สำเร็จ: ' + (err.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ GitHub'));
+        } finally {
+          btnSaveGithub.disabled = false;
+          btnModalSaveToGithub.disabled = false;
+        }
+      }
+
+      async function pullStateFromGitHub(forceReplace = false) {
+        const cfg = getGhConfig();
+        if (forceReplace) {
+          setGhStatus('info', '⏳ กำลังดึงข้อมูลล่าสุดจาก GitHub...');
+        }
+
+        try {
+          let remoteData = null;
+
+          // 1. Try real-time GitHub API raw content (bypasses CDN cache so updates appear in 1 second)
+          const apiHeaders = { 'Accept': 'application/vnd.github.raw+json' };
+          if (cfg.token) {
+            apiHeaders['Authorization'] = `Bearer ${cfg.token}`;
+          }
+          const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/data.json?ref=${encodeURIComponent(cfg.branch)}&t=${Date.now()}`;
+          const apiRes = await fetch(apiUrl, { headers: apiHeaders, cache: 'no-store' }).catch(() => null);
+          if (apiRes && apiRes.ok) {
+            remoteData = await apiRes.json().catch(() => null);
+          }
+
+          // 2. Fallback to static ./data.json on GitHub Pages
+          if (!remoteData && location.protocol.startsWith('http')) {
+            const staticRes = await fetch(`./data.json?t=${Date.now()}`, { cache: 'no-store' }).catch(() => null);
+            if (staticRes && staticRes.ok) {
+              remoteData = await staticRes.json().catch(() => null);
+            }
+          }
+
+          if (remoteData && Array.isArray(remoteData.cards) && remoteData.cards.length > 0) {
+            const remoteTime = Number(remoteData.updatedAt) || 0;
+            const localTime = Number(state.updatedAt) || 0;
+
+            if (forceReplace || remoteTime > localTime) {
+              state = { ...state, ...remoteData };
+              await persistState(true);
+              renderGrid();
+              if (forceReplace) {
+                setGhStatus('success', `✅ ดึงข้อมูลล่าสุดจาก GitHub สำเร็จ (${state.cards.length} การ์ด)!`);
+              }
+            } else if (forceReplace) {
+              setGhStatus('info', 'ℹ️ ข้อมูลในเครื่องของคุณเป็นชุดล่าสุดอยู่แล้ว');
+            }
+          } else if (forceReplace) {
+            setGhStatus('error', '⚠️ ยังไม่พบไฟล์ข้อมูล (data.json) บน GitHub กรุณากดบันทึกข้อมูลขึ้น GitHub ครั้งแรกก่อนครับ');
+          }
+        } catch (err) {
+          if (forceReplace) {
+            setGhStatus('error', '❌ ไม่สามารถดึงข้อมูลจาก GitHub ได้: ' + err.message);
+          }
+        }
+      }
+
+      btnSaveGithub.addEventListener('click', () => {
+        const cfg = getGhConfig();
+        pushStateToGitHub(cfg);
+      });
+
+      btnGithubSettings.addEventListener('click', openGhModal);
+      document.getElementById('btnCloseGhModal').addEventListener('click', closeGhModal);
+      ghModalBackdrop.addEventListener('click', (e) => {
+        if (e.target === ghModalBackdrop) closeGhModal();
+      });
+
+      btnModalSaveToGithub.addEventListener('click', () => {
+        const cfg = saveGhConfigFromInputs();
+        pushStateToGitHub(cfg);
+      });
+
+      btnModalPullFromGithub.addEventListener('click', () => {
+        saveGhConfigFromInputs();
+        pullStateFromGitHub(true);
+      });
+
+      // Automatically check GitHub for newer saved data on startup
+      pullStateFromGitHub(false);
 
       // Clear All
       document.getElementById('btnClearAll').addEventListener('click', async () => {
