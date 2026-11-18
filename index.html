@@ -1138,6 +1138,10 @@
         ⚙️ ตั้งค่าเต็ม (/75)
       </button>
 
+      <button class="btn" id="btnToggleHideMaxed" title="ซ่อนหรือแสดงรูปที่เก็บแต้มครบเต็มแล้ว (เช่น 75/75)">
+        🙈 ซ่อนที่ครบ 75/75
+      </button>
+
       <button class="btn" id="btnToggleCleanMode" title="ซ่อนปุ่มกดเพื่อดูหน้าตาเหมือนในเกมหรือแคปหน้าจอ">
         👁️ มุมมองโชว์รูป
       </button>
@@ -1511,6 +1515,14 @@
       const totalCurrent = state.cards.reduce((acc, c) => acc + (Number(c.current) || 0), 0);
       const maxedCount = state.cards.filter(c => c.max > 0 && c.current >= c.max).length;
       badge.textContent = `${total} การ์ด • รวม ${totalCurrent.toLocaleString()} ชิ้น • เต็มแล้ว ${maxedCount} ใบ`;
+
+      const hideBtn = document.getElementById('btnToggleHideMaxed');
+      if (hideBtn) {
+        hideBtn.classList.toggle('active-mode', !!state.hideMaxed);
+        hideBtn.innerHTML = state.hideMaxed
+          ? `👁️ แสดงที่ครบแล้ว (ซ่อนอยู่ ${maxedCount})`
+          : `🙈 ซ่อนที่ครบ 75/75 (${maxedCount})`;
+      }
     }
 
     // ==========================================
@@ -1521,6 +1533,9 @@
       const sortMode = document.getElementById('sortSelect').value;
 
       let list = state.cards.filter(card => {
+        if (state.hideMaxed && card.max > 0 && card.current >= card.max) {
+          return false;
+        }
         if (!query) return true;
         return (card.name || '').toLowerCase().includes(query);
       });
@@ -1545,6 +1560,11 @@
     }
 
     function updateCardDOM(card) {
+      if (state.hideMaxed && card.max > 0 && card.current >= card.max) {
+        renderGrid();
+        return;
+      }
+
       const el = document.querySelector(`.pet-card[data-id="${card.id}"]`);
       if (!el) return;
 
@@ -2177,6 +2197,13 @@
           await persistState();
           renderGrid();
         }
+      });
+
+      // Toggle Hide Maxed Cards (75/75)
+      document.getElementById('btnToggleHideMaxed').addEventListener('click', async () => {
+        state.hideMaxed = !state.hideMaxed;
+        await persistState();
+        renderGrid();
       });
 
       // Toggle Clean View Mode
